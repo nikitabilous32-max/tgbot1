@@ -6,7 +6,7 @@ import base64
 API_ID = 32816018
 API_HASH = "73aa5abdd997d8dc991c261b010adfdf"
 
-app = Client("userbot", api_id=API_ID, api_hash=API_HASH)
+app = Client("qr_session", api_id=API_ID, api_hash=API_HASH)
 
 with app:
     token = app.invoke(
@@ -19,7 +19,7 @@ with app:
 
     qr_data = base64.b64encode(token.token).decode()
 
-    qr = qrcode.QRCode()
+    qr = qrcode.QRCode(border=1)
     qr.add_data(qr_data)
     qr.make()
 
