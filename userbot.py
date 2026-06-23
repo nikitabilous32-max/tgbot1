@@ -1,19 +1,20 @@
 import sqlite3
 from pyrogram import Client
 from pyrogram.types import Message
-import os
 
 API_ID = 32816018
 API_HASH = "73aa5abdd997d8dc991c261b010adfdf"
 
+# Pyrogram 2.x — правильный формат
 app = Client(
     "userbot",
     api_id=API_ID,
     api_hash=API_HASH
 )
 
-
-
+# -----------------------------
+# ИНИЦИАЛИЗАЦИЯ БАЗЫ
+# -----------------------------
 def init_db():
     conn = sqlite3.connect("messages.db", check_same_thread=False)
     cursor = conn.cursor()
@@ -45,7 +46,9 @@ def init_db():
 
 init_db()
 
-
+# -----------------------------
+# ЛОГИРОВАНИЕ НОВЫХ СООБЩЕНИЙ
+# -----------------------------
 @app.on_message()
 def log_message(client: Client, message: Message):
     conn = sqlite3.connect("messages.db", check_same_thread=False)
@@ -58,7 +61,7 @@ def log_message(client: Client, message: Message):
         message.chat.id,
         message.from_user.id if message.from_user else None,
         message.id,
-        message.text,
+        message.text or "",
         message.date
     ))
 
@@ -68,12 +71,16 @@ def log_message(client: Client, message: Message):
     print(f"[NEW] chat={message.chat.id} msg={message.id} text={message.text}")
 
 
+# -----------------------------
+# ЛОГИРОВАНИЕ УДАЛЁННЫХ
+# -----------------------------
 @app.on_deleted_messages()
 def log_deleted(client, messages):
     conn = sqlite3.connect("messages.db", check_same_thread=False)
     cursor = conn.cursor()
 
     for msg in messages:
+
         if msg is None:
             cursor.execute("INSERT INTO deleted_unknown (message_id, reason) VALUES (?, ?)", (None, "msg is None"))
             continue
@@ -109,6 +116,9 @@ def log_deleted(client, messages):
     conn.close()
 
 
+# -----------------------------
+# ЛОГИРОВАНИЕ РЕДАКТИРОВАННЫХ
+# -----------------------------
 @app.on_edited_message()
 def log_edited(client: Client, message: Message):
     conn = sqlite3.connect("messages.db", check_same_thread=False)
@@ -118,7 +128,7 @@ def log_edited(client: Client, message: Message):
         UPDATE messages
         SET is_edited = 1, text = ?
         WHERE chat_id = ? AND message_id = ?
-    """, (message.text, message.chat.id, message.id))
+    """, (message.text or "", message.chat.id, message.id))
 
     conn.commit()
     conn.close()
