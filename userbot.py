@@ -5,7 +5,6 @@ from pyrogram.types import Message
 API_ID = 32816018
 API_HASH = "73aa5abdd997d8dc991c261b010adfdf"
 
-# Pyrogram 2.x — правильный формат
 app = Client(
     "userbot",
     api_id=API_ID,
@@ -28,7 +27,9 @@ def init_db():
             text TEXT,
             date INTEGER,
             is_deleted INTEGER DEFAULT 0,
-            is_edited INTEGER DEFAULT 0
+            is_edited INTEGER DEFAULT 0,
+            media_type TEXT,
+            file_id TEXT
         )
     """)
 
@@ -54,21 +55,42 @@ def log_message(client: Client, message: Message):
     conn = sqlite3.connect("messages.db", check_same_thread=False)
     cursor = conn.cursor()
 
+    text = message.text or ""
+    media_type = None
+    file_id = None
+
+    # Фото
+    if message.photo:
+        media_type = "photo"
+        file_id = message.photo.file_id
+
+    # Видео
+    elif message.video:
+        media_type = "video"
+        file_id = message.video.file_id
+
+    # Документы
+    elif message.document:
+        media_type = "document"
+        file_id = message.document.file_id
+
     cursor.execute("""
-        INSERT INTO messages (chat_id, user_id, message_id, text, date)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO messages (chat_id, user_id, message_id, text, date, media_type, file_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         message.chat.id,
         message.from_user.id if message.from_user else None,
         message.id,
-        message.text or "",
-        message.date
+        text,
+        message.date,
+        media_type,
+        file_id
     ))
 
     conn.commit()
     conn.close()
 
-    print(f"[NEW] chat={message.chat.id} msg={message.id} text={message.text}")
+    print(f"[NEW] chat={message.chat.id} msg={message.id} media={media_type} text={text}")
 
 
 # -----------------------------
