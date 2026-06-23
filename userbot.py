@@ -8,8 +8,13 @@ API_HASH = "73aa5abdd997d8dc991c261b010adfdf"
 app = Client(
     "userbot",
     api_id=API_ID,
-    api_hash=API_HASH
+    api_hash=API_HASH,
+    in_memory=False
 )
+
+print("Запускаю... Сканируй QR-код в Telegram → Настройки → Устройства → Подключить устройство")
+
+app.run()
 
 # -----------------------------
 # ИНИЦИАЛИЗАЦИЯ БАЗЫ
