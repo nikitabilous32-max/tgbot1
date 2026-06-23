@@ -3,11 +3,11 @@ from pyrogram import Client
 from pyrogram.types import Message
 import os
 
-API_ID = int(os.getenv("API_ID"))
-API_HASH = os.getenv("API_HASH")
+API_ID = 32816018
+API_HASH = "73aa5abdd997d8dc991c261b010adfdf"
 
 app = Client(
-    session_name="/app/userbot.session",
+    "userbot",
     api_id=API_ID,
     api_hash=API_HASH
 )
